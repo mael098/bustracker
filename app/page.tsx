@@ -2,7 +2,16 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-950 font-[var(--font-geist-sans)]">
+    <div className="flex flex-col flex-1 items-center justify-center  font-(--font-geist-sans)">
+      <video
+        autoPlay
+        loop
+        muted
+        className="fixed inset-0 w-full h-full object-cover opacity-20 -z-10"
+      >
+        <source src="/autobus.mp4" type="video/mp4" className=""/>
+        Tu navegador no soporta el video de fondo.
+      </video>
       <main className="flex flex-1 w-full flex-col items-center justify-center px-6 text-center">
         {/* Logo / Icono */}
         <div className="mb-6 flex items-center justify-center w-20 h-20 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/30">
