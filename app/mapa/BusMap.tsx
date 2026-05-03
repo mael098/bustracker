@@ -169,8 +169,8 @@ function RouteLayer({
     <>
       {/* Polilínea de la ruta */}
       <Polyline
-        positions={route.path}
-        pathOptions={{ color: route.color, weight: 4, opacity: 0.85 }}
+        positions={route.raw.map(p => [p.lat,p.lng])}
+        pathOptions={{ color: `#0000ff`, weight: 4, opacity: 0.85 }}
       />
 
       {/* Paradas */}

@@ -223,6 +223,7 @@ interface OsrmRouteResponse {
 }
 
 export interface RouteMaped extends Omit<APIRoute, 'path'> {
+    raw: APIPath[]
     stops: APIPath[]; 
     path: [number, number][]
 }
@@ -239,6 +240,7 @@ export async function routePathOnRoad(
       ...route,
       stops,
       path: [],
+      raw: route.path
     }
 
   const stopChain = stops.map(s => `${s.lng},${s.lat}`).join(';')
@@ -257,6 +259,7 @@ export async function routePathOnRoad(
         ...route,
         stops,
         path: [],
+      raw: route.path
       }
 
     const data = (await res.json()) as OsrmRouteResponse
@@ -265,6 +268,7 @@ export async function routePathOnRoad(
         ...route,
         stops,
         path: [],
+      raw: route.path
       }
 
     const coordinates = data.routes?.[0]?.geometry?.coordinates
@@ -273,6 +277,7 @@ export async function routePathOnRoad(
         ...route,
         stops,
         path: [],
+      raw: route.path
       }
 
     const roadPath: [number, number][] = coordinates.map(([lat, lng]) => [
@@ -284,12 +289,14 @@ export async function routePathOnRoad(
       ...route,
       stops,
       path: roadPath,
+      raw: route.path
     }
   } catch {
     return {
       ...route,
       stops,
       path: [],
+      raw: route.path
     }
   }
 }
