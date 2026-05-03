@@ -12,3 +12,5 @@ export default async function Routerpath(): Promise<APIRouteResponse> {
   ).then(res => res.json())
   return path
 }
+
+

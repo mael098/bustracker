@@ -5,12 +5,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   BusUnit,
+  RouteMaped,
   Stop,
   estimateMinutesToStop,
   initialBusUnits,
-  routes,
   routesOnRoad,
 } from "./data";
+import Routerpath from "../api/routepath/Routerpath";
 
 // Leaflet no funciona en SSR → dynamic import sin SSR
 const BusMap = dynamic(() => import("./BusMap"), { ssr: false });
@@ -20,7 +21,7 @@ const TICK_MS = 2500;
 const PATH_STEP = 14;
 
 export default function MapPage() {
-  const [mapRoutes, setMapRoutes] = useState(routes);
+  const [mapRoutes, setMapRoutes] = useState<RouteMaped[]>([]);
   const [busUnits, setBusUnits] = useState<BusUnit[]>(initialBusUnits);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [selectedStop, setSelectedStop] = useState<{
@@ -29,17 +30,19 @@ export default function MapPage() {
   } | null>(null);
   const [isTracking, setIsTracking] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   // Ajusta las rutas para que sigan calles reales
   useEffect(() => {
     let isMounted = true;
-    routesOnRoad(routes).then((nextRoutes) => {
+    Routerpath().then(routes => {
+      routesOnRoad(routes).then((nextRoutes) => {
       if (isMounted) setMapRoutes(nextRoutes);
     });
+    })
     return () => {
       isMounted = false;
     };
   }, []);
+  // const stops = useMemo()
 
   // Simula el movimiento de los autobuses a lo largo del path
   useEffect(() => {
@@ -168,7 +171,7 @@ export default function MapPage() {
                   const route = mapRoutes.find((r) => r.id === bus.routeId);
                   if (!route) return null;
                   const nextStop = route.stops.find(
-                    (s) =>
+                    (s: Stop) =>
                       estimateMinutesToStop(route, bus.pathIndex, s) !== null
                   );
                   const mins = nextStop
@@ -284,3 +287,4 @@ export default function MapPage() {
     </div>
   );
 }
+

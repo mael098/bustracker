@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -11,12 +11,8 @@ import {
 } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { BusUnit, estimateMinutesToStop } from './data'
-import {
-  type APIRouteResponse,
-  RouteNodeType,
-  type APIPath,
-} from '@/app/types/prisma'
+import { BusUnit, estimateMinutesToStop, RouteMaped } from './data'
+import { type APIPath } from '@/app/types/prisma'
 // ─── Fix Leaflet default icon paths (Next.js / webpack issue) ─────────────────
 function fixLeafletIcons() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,7 +96,7 @@ function MapCenter({ lat, lng }: { lat: number; lng: number }) {
 
 // ─── Props del componente ─────────────────────────────────────────────────────
 interface BusMapProps {
-  routes: APIRouteResponse
+  routes: RouteMaped[]
   busUnits: BusUnit[]
   selectedRoute: string | null
   onSelectStop: (stop: APIPath, routeId: string) => void
@@ -164,19 +160,16 @@ function RouteLayer({
   busUnits,
   onSelectStop,
 }: {
-  route: APIRouteResponse[number]
+  route: RouteMaped
   busUnits: BusUnit[]
   onSelectStop: (stop: APIPath, routeId: string) => void
 }) {
-  const stops = useMemo(
-    () => route.path.filter(p => p.type === RouteNodeType.stop),
-    [route],
-  )
+  const stops = route.stops
   return (
     <>
       {/* Polilínea de la ruta */}
       <Polyline
-        positions={route.path.map(p => [p.lat, p.lng])}
+        positions={route.path}
         pathOptions={{ color: route.color, weight: 4, opacity: 0.85 }}
       />
 
