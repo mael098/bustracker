@@ -1,3 +1,6 @@
+import Routerpath from "@/app/api/routepath/Routerpath";
+import { type APIRoute } from '@/app/types/prisma'
+
 // Coordenadas de rutas de transporte público
 // que conectan con el Instituto Tecnológico de Altamira (ITA)
 // Zona conurbada: Altamira, Tampico, Ciudad Madero, Tamaulipas
@@ -39,27 +42,38 @@ const route1Stops: Stop[] = [
     { id: "r1-s9", name: "Tecnológico de México Altamira ITA N°4", lat: 22.4252092, lng: -97.9451106 },
 ];
 
-const route1Path: [number, number][] = [
-    [22.2189841, -97.8576715],
-    [22.2350, -97.8610],
-    [22.2520, -97.8650],
-    [22.2751, -97.8688],
-    [22.2831, -97.8712],
-    [22.2950, -97.8780],
-    [22.3012, -97.8880],
-    [22.3150, -97.8970],
-    [22.3300, -97.9020],
-    [22.3456, -97.9102],
-    [22.3530, -97.9140],
-    [22.3612, -97.9180],
-    [22.3720, -97.9220],
-    [22.3830, -97.9260],
-    [22.393289054517577, -97.93139625195371],
-    [22.397651926300796, -97.93807042993949],
-    [22.41948610584814, -97.9431645155561],
-    [22.422724757713606, -97.9454502732479],
-    [22.4252092, -97.9451106],
-];
+const route1StopRetourn: Stop[] = [
+
+]
+
+
+const route1Path: [number,number][] = await Routerpath().then((res) => {
+    const ruta1 = res.find(r => r.name.includes("calle 20 de noviembre"))
+    if (!ruta1) return [];
+    return ruta1.path.map(p => [p.lat, p.lng])
+})
+
+// const route1Path: [number, number][] = [
+//     [22.2189841, -97.8576715],
+//     [22.2350, -97.8610],
+//     [22.2520, -97.8650],
+//     [22.2751, -97.8688],
+//     [22.2831, -97.8712],
+//     [22.2950, -97.8780],
+//     [22.3012, -97.8880],
+//     [22.3150, -97.8970],
+//     [22.3300, -97.9020],
+//     [22.3456, -97.9102],
+//     [22.3530, -97.9140],
+//     [22.3612, -97.9180],
+//     [22.3720, -97.9220],
+//     [22.3830, -97.9260],
+//     [22.393289054517577, -97.93139625195371],
+//     [22.397651926300796, -97.93807042993949],
+//     [22.41948610584814, -97.9431645155561],
+//     [22.422724757713606, -97.9454502732479],
+//     [22.4252092, -97.9451106],
+// ];
 
 // ─── RUTA 2: Ciudad Madero → ITA ─────────────────────────────────────────────
 const route2Stops: Stop[] = [
@@ -136,7 +150,7 @@ const AVG_SPEED_KMH = 25;
  * a una parada específica. Retorna null si ya pasó la parada.
  */
 export function estimateMinutesToStop(
-    route: Route,
+    route: APIRoute,
     busPathIndex: number,
     stop: Stop
 ): number | null {
@@ -144,7 +158,7 @@ export function estimateMinutesToStop(
     let closestIdx = 0;
     let minDist = Infinity;
     for (let i = 0; i < route.path.length; i++) {
-        const d = haversineKm(route.path[i][0], route.path[i][1], stop.lat, stop.lng);
+        const d = haversineKm(route.path[i].lat, route.path[i].lng, stop.lat, stop.lng);
         if (d < minDist) {
             minDist = d;
             closestIdx = i;
@@ -157,8 +171,8 @@ export function estimateMinutesToStop(
     let distKm = 0;
     for (let i = busPathIndex; i < closestIdx; i++) {
         distKm += haversineKm(
-            route.path[i][0], route.path[i][1],
-            route.path[i + 1][0], route.path[i + 1][1]
+            route.path[i].lat, route.path[i].lng,
+            route.path[i + 1].lat, route.path[i + 1].lng
         );
     }
 

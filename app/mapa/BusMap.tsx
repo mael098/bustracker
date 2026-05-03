@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -8,20 +8,25 @@ import {
   Marker,
   Popup,
   useMap,
-} from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import { Route, BusUnit, Stop, estimateMinutesToStop } from "./data";
-
+} from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import { BusUnit, estimateMinutesToStop } from './data'
+import {
+  type APIRouteResponse,
+  RouteNodeType,
+  type APIPath,
+} from '@/app/types/prisma'
 // ─── Fix Leaflet default icon paths (Next.js / webpack issue) ─────────────────
 function fixLeafletIcons() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  delete (L.Icon.Default.prototype as any)._getIconUrl
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  });
+    iconRetinaUrl:
+      'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  })
 }
 
 // ─── Custom icon factory ──────────────────────────────────────────────────────
@@ -40,10 +45,10 @@ function busIcon(color: string, label: string) {
         box-shadow:0 2px 6px rgba(0,0,0,.4);
       ">${label}</div>
     `,
-    className: "",
+    className: '',
     iconSize: [32, 32],
     iconAnchor: [16, 16],
-  });
+  })
 }
 
 function stopIcon(color: string) {
@@ -57,10 +62,10 @@ function stopIcon(color: string) {
         box-shadow:0 1px 4px rgba(0,0,0,.35);
       "></div>
     `,
-    className: "",
+    className: '',
     iconSize: [14, 14],
     iconAnchor: [7, 7],
-  });
+  })
 }
 
 function itaIcon() {
@@ -78,31 +83,31 @@ function itaIcon() {
         box-shadow:0 2px 8px rgba(0,0,0,.5);
       ">ITA</div>
     `,
-    className: "",
+    className: '',
     iconSize: [38, 38],
     iconAnchor: [19, 19],
-  });
+  })
 }
 
 // ─── Subcomponente: re-centra el mapa al montar ───────────────────────────────
 function MapCenter({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMap();
+  const map = useMap()
   useEffect(() => {
-    map.setView([lat, lng], 13);
-  }, [map, lat, lng]);
-  return null;
+    map.setView([lat, lng], 13)
+  }, [map, lat, lng])
+  return null
 }
 
 // ─── Props del componente ─────────────────────────────────────────────────────
 interface BusMapProps {
-  routes: Route[];
-  busUnits: BusUnit[];
-  selectedRoute: string | null;
-  onSelectStop: (stop: Stop, routeId: string) => void;
+  routes: APIRouteResponse
+  busUnits: BusUnit[]
+  selectedRoute: string | null
+  onSelectStop: (stop: APIPath, routeId: string) => void
 }
 
-const ITA_LAT = 22.4252092;
-const ITA_LNG = -97.9451106;
+const ITA_LAT = 22.4252092
+const ITA_LNG = -97.9451106
 
 export default function BusMap({
   routes,
@@ -111,18 +116,17 @@ export default function BusMap({
   onSelectStop,
 }: BusMapProps) {
   useEffect(() => {
-    fixLeafletIcons();
-  }, []);
+    fixLeafletIcons()
+  }, [])
 
-  const visibleRoutes = selectedRoute
-    ? routes.filter((r) => r.id === selectedRoute)
-    : routes;
+  const visibleRoutes =
+    selectedRoute ? routes.filter(r => r.id === selectedRoute) : routes
 
   return (
     <MapContainer
       center={[ITA_LAT, ITA_LNG]}
       zoom={13}
-      className="w-full h-full"
+      className='w-full h-full'
       zoomControl={true}
     >
       <MapCenter lat={ITA_LAT} lng={ITA_LNG} />
@@ -130,7 +134,7 @@ export default function BusMap({
       {/* Mapa base OpenStreetMap (sin API key) */}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
       />
 
       {/* ITA marker fijo */}
@@ -142,16 +146,16 @@ export default function BusMap({
         </Popup>
       </Marker>
 
-      {visibleRoutes.map((route) => (
+      {visibleRoutes.map(route => (
         <RouteLayer
           key={route.id}
           route={route}
-          busUnits={busUnits.filter((b) => b.routeId === route.id)}
+          busUnits={busUnits.filter(b => b.routeId === route.id)}
           onSelectStop={onSelectStop}
         />
       ))}
     </MapContainer>
-  );
+  )
 }
 
 // ─── Capa de cada ruta (polilínea + paradas + autobuses) ─────────────────────
@@ -160,20 +164,24 @@ function RouteLayer({
   busUnits,
   onSelectStop,
 }: {
-  route: Route;
-  busUnits: BusUnit[];
-  onSelectStop: (stop: Stop, routeId: string) => void;
+  route: APIRouteResponse[number]
+  busUnits: BusUnit[]
+  onSelectStop: (stop: APIPath, routeId: string) => void
 }) {
+  const stops = useMemo(
+    () => route.path.filter(p => p.type === RouteNodeType.stop),
+    [route],
+  )
   return (
     <>
       {/* Polilínea de la ruta */}
       <Polyline
-        positions={route.path}
+        positions={route.path.map(p => [p.lat, p.lng])}
         pathOptions={{ color: route.color, weight: 4, opacity: 0.85 }}
       />
 
       {/* Paradas */}
-      {route.stops.map((stop) => (
+      {stops.map(stop => (
         <Marker
           key={stop.id}
           position={[stop.lat, stop.lng]}
@@ -187,22 +195,22 @@ function RouteLayer({
             <br />
             <span style={{ color: route.color }}>● {route.name}</span>
             <br />
-            {busUnits.map((bus) => {
-              const mins = estimateMinutesToStop(route, bus.pathIndex, stop);
-              if (mins === null) return null;
+            {busUnits.map(bus => {
+              const mins = estimateMinutesToStop(route, bus.pathIndex, stop)
+              if (mins === null) return null
               return (
-                <span key={bus.id} className="text-sm">
+                <span key={bus.id} className='text-sm'>
                   🚌 Unidad {bus.label}: ~{mins} min
                 </span>
-              );
+              )
             })}
           </Popup>
         </Marker>
       ))}
 
       {/* Autobuses en movimiento */}
-      {busUnits.map((bus) => {
-        const pos = route.path[bus.pathIndex] ?? route.path[0];
+      {busUnits.map(bus => {
+        const pos = route.path[bus.pathIndex] ?? route.path[0]
         return (
           <Marker
             key={bus.id}
@@ -214,19 +222,19 @@ function RouteLayer({
               <br />
               <span style={{ color: route.color }}>● {route.name}</span>
               <br />
-              {route.stops.map((stop) => {
-                const mins = estimateMinutesToStop(route, bus.pathIndex, stop);
-                if (mins === null) return null;
+              {stops.map(stop => {
+                const mins = estimateMinutesToStop(route, bus.pathIndex, stop)
+                if (mins === null) return null
                 return (
-                  <div key={stop.id} className="text-sm">
+                  <div key={stop.id} className='text-sm'>
                     ⏱ {stop.name}: ~{mins} min
                   </div>
-                );
+                )
               })}
             </Popup>
           </Marker>
-        );
+        )
       })}
     </>
-  );
+  )
 }
