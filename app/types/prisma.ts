@@ -1,5 +1,3 @@
-import { BusUnit } from '../mapa/data'
-
 export const RouteNodeType = {
   stop: 'stop',
   route: 'route',
