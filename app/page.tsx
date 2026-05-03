@@ -22,7 +22,7 @@ const contextCards = [
 
 export default function Home() {
   const [showText, setShowText] = React.useState(false);
-  const text = "Autobus";
+  const text = "BusTracker";
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,7 +46,7 @@ export default function Home() {
         <div className="flex min-h-screen w-full max-w-6xl flex-col items-center justify-center gap-8 sm:flex-row sm:gap-6">
           <div className="flex w-full flex-col items-center justify-center gap-6 text-center sm:text-left">
             <h1 className="text-4xl font-bold text-white sm:text-5xl">
-              Bienvenido al {" "}
+              Bienvenido a{" "}
               {showText && (
                 <span className="inline-block">
                   {text.split("").map((letter, index) => (
