@@ -3,7 +3,7 @@ import { APIRouteResponse } from '@/app/types/prisma'
 
 export default async function Routerpath(): Promise<APIRouteResponse> {
   const path: APIRouteResponse = await fetch(
-    process.env.API_URL as string,
+    `${process.env.NEXT_PUBLIC_API_URL}/routes?include=path`,
     {
       cache: 'default',
       headers: {
